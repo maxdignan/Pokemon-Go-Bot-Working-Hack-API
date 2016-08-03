@@ -207,7 +207,7 @@ class PGoApi:
         position = self.get_position()
         neighbors = getNeighbors(self._posf)
         return self.get_map_objects(latitude=position[0], longitude=position[1], since_timestamp_ms=[0]*len(neighbors), cell_id=neighbors).call()
-    
+
     def attempt_catch(self,encounter_id,spawn_point_guid): #Problem here... add 4 if you have master ball
         for i in range(1,3): # Range 1...4 iff you have master ball `range(1,4)`
             r = self.catch_pokemon(
@@ -244,11 +244,24 @@ class PGoApi:
                 pokemons = sorted(pokemons, lambda x,y: cmp(x['cp'],y['cp']),reverse=True)
                 for pokemon in pokemons[MIN_SIMILAR_POKEMON:]:
                     if 'cp' in pokemon and pokemonIVPercentage(pokemon) < self.MIN_KEEP_IV and pokemon['cp'] < self.KEEP_CP_OVER:
-                        if pokemon['pokemon_id'] == 16:
-                            for inventory_item in inventory_items:
-                                if "pokemon_family" in inventory_item['inventory_item_data'] and inventory_item['inventory_item_data']['pokemon_family']['family_id'] == 16 and inventory_item['inventory_item_data']['pokemon_family']['candy'] > 11:
-                                  self.log.info("Evolving pokemon: %s", self.pokemon_names[str(pokemon['pokemon_id'])])
-                                  self.evolve_pokemon(pokemon_id = pokemon['id'])
+
+                        # 12 candy  caterpie, pidgey, weedle, spearow, rattata
+                        for poke_id in [10, 16, 13, 21]:
+                            if pokemon['pokemon_id'] == poke_id:
+                                for inventory_item in inventory_items:
+                                    if "pokemon_family" in inventory_item['inventory_item_data'] and inventory_item['inventory_item_data']['pokemon_family']['family_id'] == poke_id and inventory_item['inventory_item_data']['pokemon_family']['candy'] > 11:
+                                      self.log.info("Evolving pokemon: %s", self.pokemon_names[str(pokemon['pokemon_id'])])
+                                      self.evolve_pokemon(pokemon_id = pokemon['id'])
+                                      break
+                        # 50 candy  drowzee, krabby, horsea, venonat, zubat
+                        for poke_id2 in [96, 98, 116, 48, 41]:
+                            if pokemon['pokemon_id'] == poke_id2:
+                                for inventory_item in inventory_items:
+                                    if "pokemon_family" in inventory_item['inventory_item_data'] and inventory_item['inventory_item_data']['pokemon_family']['family_id'] == poke_id2 and inventory_item['inventory_item_data']['pokemon_family']['candy'] > 49:
+                                      self.log.info("Evolving pokemon: %s", self.pokemon_names[str(pokemon['pokemon_id'])])
+                                      self.evolve_pokemon(pokemon_id = pokemon['id'])
+                                      break
+
                         self.log.debug("Releasing pokemon: %s", pokemon)
                         self.log.info("Releasing pokemon: %s IV: %s", self.pokemon_names[str(pokemon['pokemon_id'])], pokemonIVPercentage(pokemon))
                         self.release_pokemon(pokemon_id = pokemon["id"])
